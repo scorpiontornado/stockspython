@@ -1,13 +1,16 @@
 from selenium import webdriver
 from lxml import html
 
+
 def share_profit(old_value, new_value, money_spent):
-	shares_bought = money_spent / old_value
-	
-	return (shares_bought * new_value) - (shares_bought * old_value)
+    shares_bought = money_spent / old_value
+
+    return (shares_bought * new_value) - (shares_bought * old_value)
+
 
 def share_percent(money_spent_total, profit):
-	return profit / money_spent_total * 100
+    return profit / money_spent_total * 100
+
 
 share_list = [
     {
@@ -61,13 +64,21 @@ share_list = [
     }
 ]
 
-browser = webdriver.Chrome('/Users/nicholas/Desktop/stockspython/chromedriver') #replace with .Firefox(), or with the browser of your choice
+# browser = webdriver.Chrome('/Users/nicholas/Desktop/stockspython/chromedriver') #replace with .Firefox(), or with the browser of your choice
+# replace with .Firefox(), or with the browser of your choice
+# https://sites.google.com/a/chromium.org/chromedriver/home
+# 'chromedriver' executable needs to be in PATH.
+# If not specified, it will search it out.
+browser = webdriver.Chrome('./chromedriver')
 for i in share_list:
-    url = "https://www.asx.com.au/asx/share-price-research/company/" + i["name"]
-    browser.get(url) #navigate to the page
-    innerHTML = browser.execute_script("return document.body.innerHTML") #returns the inner HTML as a string
+    url = "https://www.asx.com.au/asx/share-price-research/company/" + \
+        i["name"]
+    browser.get(url)  # navigate to the page
+    # returns the inner HTML as a string
+    innerHTML = browser.execute_script("return document.body.innerHTML")
     htmlElem = html.document_fromstring(innerHTML)
-    i["new_price"] = float(htmlElem.xpath('//span[@class="ng-binding"]/text()')[1])
+    i["new_price"] = float(htmlElem.xpath(
+        '//span[@class="ng-binding"]/text()')[1])
 
 browser.quit()
 
@@ -80,26 +91,30 @@ for i in share_list:
     # print(i)
     money_spent += i["amount_bought"]
     shares += share_profit(i["old_price"], i["new_price"], i["amount_bought"])
-    temp = round(share_profit(i["old_price"], i["new_price"], i["amount_bought"]), 2)
+    temp = round(share_profit(i["old_price"],
+                              i["new_price"], i["amount_bought"]), 2)
     indProfit = indProfit + "\n" + i["name"] + ": " + str(temp)
-    temp = round(share_percent(i["amount_bought"], (share_profit(i["old_price"], i["new_price"], i["amount_bought"]))), 4)
+    temp = round(share_percent(i["amount_bought"], (share_profit(
+        i["old_price"], i["new_price"], i["amount_bought"]))), 4)
     indPctPr = indPctPr + "\n" + i["name"] + ": " + str(temp)
 
 shares_percent = share_percent(money_spent, shares)
 
-douse = share_profit(share_list[0]["old_price"], share_list[0]["new_price"], share_list[0]["douse_bought"])
+douse = share_profit(share_list[0]["old_price"], share_list[0]
+                     ["new_price"], share_list[0]["douse_bought"])
 
 if(shares > douse):
-	my_string = "Congrats, you made more money than if you had only\ninvested in STW!"
+    my_string = "Congrats, you made more money than if you had only\ninvested in STW!"
 elif(shares == douse):
-	my_string = "Somehow, you would have made the same amount of money\nif you had only invested in STW!. You are in the Matrix!"
+    my_string = "Somehow, you would have made the same amount of money\nif you had only invested in STW!. You are in the Matrix!"
 else:
     my_string = "Drat!\nYou would have made more if you had only invested in STW!"
 
-profitStr = "Your profit, from spending $" + str(money_spent) + ": $" + str(round(shares, 2)) + " (to 2dp)\n\nIf you had bought $" + str(share_list[0]["douse_bought"]) + " of ASX 200 Fund (ASX: STW),\nyour profit would be: $" + str(round(douse, 2)) + " (to 2dp)\n\n" + my_string
+profitStr = "Your profit, from spending $" + str(money_spent) + ": $" + str(round(shares, 2)) + " (to 2dp)\n\nIf you had bought $" + str(
+    share_list[0]["douse_bought"]) + " of ASX 200 Fund (ASX: STW),\nyour profit would be: $" + str(round(douse, 2)) + " (to 2dp)\n\n" + my_string
 
-pctStr = "Your percentage profit: " + str(round(shares_percent, 4)) + "% (to 4dp)\n\nIf you had bought $" + str(share_list[0]["douse_bought"]) + " of ASX 200 Fund (ASX: STW),\nyour percentage profit would be: " + str(round((share_percent(share_list[0]["douse_bought"], douse)), 4)) + "% (to 4dp)"
-
+pctStr = "Your percentage profit: " + str(round(shares_percent, 4)) + "% (to 4dp)\n\nIf you had bought $" + str(
+    share_list[0]["douse_bought"]) + " of ASX 200 Fund (ASX: STW),\nyour percentage profit would be: " + str(round((share_percent(share_list[0]["douse_bought"], douse)), 4)) + "% (to 4dp)"
 
 
 print(profitStr, pctStr, sep='\n\n', end='\n\n')
